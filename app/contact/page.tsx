@@ -49,6 +49,8 @@ export default function ContactPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerHidden, setHeaderHidden] = useState(false);
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     let previousScrollY = window.scrollY;
@@ -66,20 +68,35 @@ export default function ContactPage() {
     return () => { window.removeEventListener("scroll", onScroll); if (frame) window.cancelAnimationFrame(frame); };
   }, [menuOpen]);
 
-  const submitForm = (event: FormEvent<HTMLFormElement>) => {
+  const submitForm = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const subject = encodeURIComponent(`Website enquiry: ${String(data.get("service") || "General enquiry")}`);
-    const body = encodeURIComponent([
-      `Full name: ${String(data.get("name") || "")}`,
-      `Phone: ${String(data.get("phone") || "")}`,
-      `Email: ${String(data.get("email") || "")}`,
-      `Service: ${String(data.get("service") || "")}`,
-      "",
-      String(data.get("message") || ""),
-    ].join("\n"));
-    window.location.href = `mailto:ML@lemaraccountants.co.uk?subject=${subject}&body=${body}`;
-    setSent(true);
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setSubmitting(true);
+    setFormError("");
+
+    try {
+      const response = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enquiryType: "contact",
+          fullName: String(data.get("name") || ""),
+          phone: String(data.get("phone") || ""),
+          email: String(data.get("email") || ""),
+          service: String(data.get("service") || ""),
+          message: String(data.get("message") || ""),
+          website: String(data.get("website") || ""),
+        }),
+      });
+      if (!response.ok) throw new Error("Unable to send your enquiry.");
+      form.reset();
+      setSent(true);
+    } catch {
+      setFormError("We could not send your enquiry. Please try again or call us directly.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -163,7 +180,7 @@ export default function ContactPage() {
         </div>
         <div className="contact-enquiry-form-wrap">
           {sent ? (
-            <div className="contact-success" role="status"><Send /><div><h3>Your email draft is ready.</h3><p>Your email app has been opened with the completed enquiry details.</p><button type="button" onClick={() => setSent(false)}>Prepare another message</button></div></div>
+            <div className="contact-success" role="status"><Send /><div><h3>Your enquiry has been received.</h3><p>Thank you. A member of our team will get back to you shortly.</p><button type="button" onClick={() => setSent(false)}>Send another message</button></div></div>
           ) : (
             <form className="contact-form" onSubmit={submitForm}>
               <label>Full Name <b>*</b><input type="text" name="name" placeholder="Enter your full name" required /></label>
@@ -171,7 +188,9 @@ export default function ContactPage() {
               <label>Email Address <b>*</b><input type="email" name="email" placeholder="Enter your email address" required /></label>
               <label>Service Needed <b>*</b><select name="service" defaultValue="" required><option value="" disabled>Please select a service</option><option>Bookkeeping &amp; Accounts</option><option>Tax Preparation &amp; Planning</option><option>Payroll Services</option><option>VAT / Sales Tax</option><option>Management Accounts</option><option>Company Accounts</option></select></label>
               <label>Message <b>*</b><textarea name="message" placeholder="Tell us how we can help you" required /></label>
-              <button className="about-btn about-btn-gold" type="submit"><Send />Send Message</button>
+              <input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+              <button className="about-btn about-btn-gold" type="submit" disabled={submitting}><Send />{submitting ? "Sending..." : "Send Message"}</button>
+              {formError && <p className="public-form-error" role="alert">{formError}</p>}
             </form>
           )}
         </div>

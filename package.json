@@ -11,7 +11,10 @@
   "dependencies": {
     "@fontsource/cormorant-garamond": "latest",
     "@fontsource/montserrat": "latest",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.18",
     "lucide-react": "latest",
+    "mysql2": "^3.24.6",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

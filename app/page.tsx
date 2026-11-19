@@ -112,6 +112,8 @@ export default function Home() {
   const [heroPaused, setHeroPaused] = useState(false);
   const [testimonial, setTestimonial] = useState(0);
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (heroPaused) return;
@@ -150,18 +152,34 @@ export default function Home() {
     };
   }, [menuOpen]);
 
-  const submitForm = (event: FormEvent<HTMLFormElement>) => {
+  const submitForm = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const subject = encodeURIComponent(`Callback request: ${String(data.get("service") || "General enquiry")}`);
-    const body = encodeURIComponent([
-      `Full name: ${String(data.get("name") || "")}`,
-      `Phone: ${String(data.get("phone") || "")}`,
-      `Email: ${String(data.get("email") || "")}`,
-      `Service: ${String(data.get("service") || "General enquiry")}`,
-    ].join("\n"));
-    window.location.href = `mailto:ML@lemaraccountants.co.uk?subject=${subject}&body=${body}`;
-    setSent(true);
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setSubmitting(true);
+    setFormError("");
+
+    try {
+      const response = await fetch("/api/enquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          enquiryType: "callback",
+          fullName: String(data.get("name") || ""),
+          phone: String(data.get("phone") || ""),
+          email: String(data.get("email") || ""),
+          service: String(data.get("service") || "General enquiry"),
+          website: String(data.get("website") || ""),
+        }),
+      });
+      if (!response.ok) throw new Error("Unable to submit your callback request.");
+      form.reset();
+      setSent(true);
+    } catch {
+      setFormError("We could not submit your request. Please try again or call us directly.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const proofIcons = [UsersRound, ShieldCheck, BarChart3, Handshake];
@@ -284,7 +302,7 @@ export default function Home() {
           <path className="callback-sweep-gold" d="M579 0C558 75 529 201 430 262H455C550 201 579 75 601 0Z" />
         </svg>
         <div className="container callback-inner"><div className="callback-copy"><span className="gold-rule" /><p className="eyebrow">REQUEST A CALL BACK</p><h2>Fill in your details and<br />we’ll get back to you.</h2></div>
-          {sent ? <div className="form-success"><Check /><div><strong>Email draft ready.</strong><p>Your email app has been opened with your callback details.</p></div></div> : <form className="callback-form" onSubmit={submitForm}><div className="form-row"><input name="name" required aria-label="Full name" placeholder="Full Name*" /><input name="phone" required aria-label="Phone number" placeholder="Phone Number*" type="tel" /></div><input name="email" required aria-label="Email address" placeholder="Email Address*" type="email" /><select name="service" required aria-label="How can we help" defaultValue=""><option value="" disabled>How can we help?</option><option>Bookkeeping &amp; Accounts</option><option>Tax Preparation &amp; Planning</option><option>Payroll Services</option><option>Business Advisory</option></select><button className="btn btn-gold" type="submit">Request a Call Back <ArrowRight size={15} /></button></form>}
+          {sent ? <div className="form-success"><Check /><div><strong>Request received.</strong><p>Thank you. A member of our team will contact you shortly.</p></div></div> : <form className="callback-form" onSubmit={submitForm}><div className="form-row"><input name="name" required aria-label="Full name" placeholder="Full Name*" /><input name="phone" required aria-label="Phone number" placeholder="Phone Number*" type="tel" /></div><input name="email" required aria-label="Email address" placeholder="Email Address*" type="email" /><select name="service" required aria-label="How can we help" defaultValue=""><option value="" disabled>How can we help?</option><option>Bookkeeping &amp; Accounts</option><option>Tax Preparation &amp; Planning</option><option>Payroll Services</option><option>Business Advisory</option></select><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><button className="btn btn-gold" type="submit" disabled={submitting}>{submitting ? "Sending..." : "Request a Call Back"} <ArrowRight size={15} /></button>{formError && <p className="public-form-error" role="alert">{formError}</p>}</form>}
         </div>
       </section>
 
