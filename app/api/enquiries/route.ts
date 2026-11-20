@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ensureSchema, getPool } from "../../lib/db";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 function clean(value: unknown, max = 500) {
   return String(value ?? "").trim().slice(0, max);
@@ -16,6 +17,7 @@ export async function POST(request: Request) {
     const phone = clean(body.phone, 50);
     const email = clean(body.email, 190).toLowerCase();
     const service = clean(body.service || "General enquiry", 190);
+    const sourcePage = clean(body.sourcePage || "Website", 190);
     const message = clean(body.message, 5000);
     if (!fullName || !phone || !email || !email.includes("@")) {
       return NextResponse.json({ error: "Please provide valid contact details." }, { status: 400 });
@@ -23,8 +25,8 @@ export async function POST(request: Request) {
     await ensureSchema();
     const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
     await getPool().execute(
-      "INSERT INTO enquiries (enquiry_type, full_name, phone, email, service, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-      [enquiryType, fullName, phone, email, service, message || null, forwarded || null, request.headers.get("user-agent")?.slice(0, 500) || null],
+      "INSERT INTO enquiries (enquiry_type, full_name, phone, email, service, source_page, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [enquiryType, fullName, phone, email, service, sourcePage, message || null, forwarded || null, request.headers.get("user-agent")?.slice(0, 500) || null],
     );
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {

@@ -4,6 +4,7 @@ import { getAdminSession } from "../../../lib/auth";
 import { ensureSchema, getPool } from "../../../lib/db";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 async function authorised() { return Boolean(await getAdminSession()); }
 function clean(value: unknown, max = 500) { return String(value ?? "").trim().slice(0, max); }
@@ -11,7 +12,7 @@ function clean(value: unknown, max = 500) { return String(value ?? "").trim().sl
 export async function GET() {
   if (!(await authorised())) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   await ensureSchema();
-  const [rows] = await getPool().query<RowDataPacket[]>("SELECT id, enquiry_type AS enquiryType, full_name AS fullName, phone, email, service, message, status, created_at AS createdAt, updated_at AS updatedAt FROM enquiries ORDER BY created_at DESC");
+  const [rows] = await getPool().query<RowDataPacket[]>("SELECT id, enquiry_type AS enquiryType, full_name AS fullName, phone, email, service, source_page AS sourcePage, message, status, created_at AS createdAt, updated_at AS updatedAt FROM enquiries ORDER BY created_at DESC");
   return NextResponse.json({ enquiries: rows });
 }
 
