@@ -5,6 +5,8 @@ import AdminLoginForm from "../admin-login-form";
 import "../admin.css";
 
 export const metadata: Metadata = { title: "Admin Login | Lemar Accountants", robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminLoginPage() {
   if (await getAdminSession()) redirect("/admin");
