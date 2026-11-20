@@ -78,7 +78,7 @@ export default function AboutPage() {
             <a href="tel:02034411664"><Phone />020 3441 1664</a>
             <a href="tel:+447551930360"><Smartphone />07551 930360</a>
             <a href="mailto:ML@lemaraccountants.co.uk"><Mail />ML@lemaraccountants.co.uk</a>
-            <span><MapPin />226 Church Road, Northolt UB5 5AE</span>
+            <span><MapPin />220 Church Road, Northolt UB5 5AE</span>
           </div>
           <div className="about-top-actions">
             <div className="about-socials"><a href="https://www.instagram.com/lemar_accountantsltd?jplx=b3BnZnVsNmJkbmp3&utm_source=qr" target="_blank" rel="noreferrer" aria-label="Instagram"><BrandIcon name="instagram" /></a></div>

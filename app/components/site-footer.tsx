@@ -68,7 +68,7 @@ export default function SiteFooter({ id = "footer" }: { id?: string }) {
           <a href="tel:02034411664"><Phone />020 3441 1664</a>
           <a href="tel:+447551930360"><Phone />07551 930360</a>
           <a href="mailto:ML@lemaraccountants.co.uk"><Mail />ML@lemaraccountants.co.uk</a>
-          <span><MapPin />226 Church Road, Northolt UB5 5AE</span>
+          <span><MapPin />220 Church Road, Northolt UB5 5AE</span>
           <span><Clock3 />8:30 AM &ndash; 6:30 PM, 7 days a week</span>
         </div>
       </div>

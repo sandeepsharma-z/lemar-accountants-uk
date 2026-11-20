@@ -31,7 +31,7 @@ const contactCards = [
   { icon: Smartphone, title: "Mobile", lines: ["07551 930360"], href: "tel:+447551930360" },
   { icon: Mail, title: "Email", lines: ["ML@lemaraccountants.co.uk"], href: "mailto:ML@lemaraccountants.co.uk" },
   { icon: Globe2, title: "Website", lines: ["www.lemar", "accountants.co.uk"], href: "/" },
-  { icon: MapPin, title: "Address", lines: ["226 Church Road,", "Northolt UB5 5AE"], href: "https://www.google.com/maps?q=226+Church+Road,+Northolt+UB5+5AE" },
+  { icon: MapPin, title: "Address", lines: ["220 Church Road,", "Northolt UB5 5AE"], href: "https://www.google.com/maps?q=220+Church+Road,+Northolt+UB5+5AE" },
 ];
 
 const benefits = [
@@ -107,7 +107,7 @@ export default function ContactPage() {
             <a href="tel:02034411664"><Phone />020 3441 1664</a>
             <a href="tel:+447551930360"><Smartphone />07551 930360</a>
             <a href="mailto:ML@lemaraccountants.co.uk"><Mail />ML@lemaraccountants.co.uk</a>
-            <span><MapPin />226 Church Road, Northolt UB5 5AE</span>
+            <span><MapPin />220 Church Road, Northolt UB5 5AE</span>
           </div>
           <div className="about-top-actions">
             <div className="about-socials">
@@ -205,10 +205,10 @@ export default function ContactPage() {
           </div>
           <div className="contact-location-grid">
             <div className="contact-map">
-              <iframe title="Lemar Accountants office location" src="https://www.google.com/maps?q=Lemar+Accountants+%26+Tax+Advisors,+226+Church+Road,+Northolt+UB5+5AE&z=15&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+              <iframe title="Lemar Accountants office location" src="https://www.google.com/maps?q=Lemar+Accountants+%26+Tax+Advisors,+220+Church+Road,+Northolt+UB5+5AE&z=15&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
             </div>
             <div className="contact-location-card">
-              <div><MapPin /><p><strong>Our Office</strong><span>226 Church Road,<br />Northolt UB5 5AE</span></p></div>
+              <div><MapPin /><p><strong>Our Office</strong><span>220 Church Road,<br />Northolt UB5 5AE</span></p></div>
               <div><Clock3 /><p><strong>Business Hours</strong><span className="contact-hours"><span>Every day:</span><b>8:30 AM – 6:30 PM</b></span></p></div>
             </div>
           </div>
