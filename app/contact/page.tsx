@@ -23,6 +23,7 @@ import { FormEvent, useEffect, useState } from "react";
 import ServiceMenu from "../components/service-menu";
 import SiteFooter from "../components/site-footer";
 import SiteSearch from "../components/site-search";
+import { enquiryServiceOptions } from "../lib/service-options";
 import "../about/about.css";
 import "./contact.css";
 
@@ -187,7 +188,7 @@ export default function ContactPage() {
               <label>Full Name <b>*</b><input type="text" name="name" placeholder="Enter your full name" required /></label>
               <label>Phone Number <b>*</b><input type="tel" name="phone" placeholder="Enter your phone number" required /></label>
               <label>Email Address <b>*</b><input type="email" name="email" placeholder="Enter your email address" required /></label>
-              <label>Service Needed <b>*</b><select name="service" defaultValue="" required><option value="" disabled>Please select a service</option><option>Bookkeeping &amp; Accounts</option><option>Tax Preparation &amp; Planning</option><option>Payroll Services</option><option>VAT / Sales Tax</option><option>Management Accounts</option><option>Company Accounts</option></select></label>
+              <label>Service Needed <b>*</b><select name="service" defaultValue="" required><option value="" disabled>Please select a service</option>{enquiryServiceOptions.map(service => <option key={service} value={service}>{service}</option>)}</select></label>
               <label>Message <b>*</b><textarea name="message" placeholder="Tell us how we can help you" required /></label>
               <input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
               <button className="about-btn about-btn-gold" type="submit" disabled={submitting}><Send />{submitting ? "Sending..." : "Send Message"}</button>

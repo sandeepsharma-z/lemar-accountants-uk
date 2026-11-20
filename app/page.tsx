@@ -12,6 +12,7 @@ import { FormEvent, useEffect, useState } from "react";
 import SiteFooter from "./components/site-footer";
 import ServiceMenu from "./components/service-menu";
 import SiteSearch from "./components/site-search";
+import { enquiryServiceOptions } from "./lib/service-options";
 
 const heroSlides = [
   {
@@ -303,7 +304,7 @@ export default function Home() {
           <path className="callback-sweep-gold" d="M579 0C558 75 529 201 430 262H455C550 201 579 75 601 0Z" />
         </svg>
         <div className="container callback-inner"><div className="callback-copy"><span className="gold-rule" /><p className="eyebrow">REQUEST A CALL BACK</p><h2>Fill in your details and<br />we’ll get back to you.</h2></div>
-          {sent ? <div className="form-success"><Check /><div><strong>Request received.</strong><p>Thank you. A member of our team will contact you shortly.</p></div></div> : <form className="callback-form" onSubmit={submitForm}><div className="form-row"><input name="name" required aria-label="Full name" placeholder="Full Name*" /><input name="phone" required aria-label="Phone number" placeholder="Phone Number*" type="tel" /></div><input name="email" required aria-label="Email address" placeholder="Email Address*" type="email" /><select name="service" required aria-label="How can we help" defaultValue=""><option value="" disabled>How can we help?</option><option>Bookkeeping &amp; Accounts</option><option>Tax Preparation &amp; Planning</option><option>Payroll Services</option><option>Business Advisory</option></select><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><button className="btn btn-gold" type="submit" disabled={submitting}>{submitting ? "Sending..." : "Request a Call Back"} <ArrowRight size={15} /></button>{formError && <p className="public-form-error" role="alert">{formError}</p>}</form>}
+          {sent ? <div className="form-success"><Check /><div><strong>Request received.</strong><p>Thank you. A member of our team will contact you shortly.</p></div></div> : <form className="callback-form" onSubmit={submitForm}><div className="form-row"><input name="name" required aria-label="Full name" placeholder="Full Name*" /><input name="phone" required aria-label="Phone number" placeholder="Phone Number*" type="tel" /></div><input name="email" required aria-label="Email address" placeholder="Email Address*" type="email" /><select name="service" required aria-label="How can we help" defaultValue=""><option value="" disabled>How can we help?</option>{enquiryServiceOptions.map(service => <option key={service} value={service}>{service}</option>)}</select><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><button className="btn btn-gold" type="submit" disabled={submitting}>{submitting ? "Sending..." : "Request a Call Back"} <ArrowRight size={15} /></button>{formError && <p className="public-form-error" role="alert">{formError}</p>}</form>}
         </div>
       </section>
 
