@@ -57,6 +57,9 @@ async function createSchema() {
       source_page VARCHAR(190) NOT NULL DEFAULT 'Website',
       message TEXT NULL,
       status ENUM('new','in_progress','completed') NOT NULL DEFAULT 'new',
+      admin_email_status VARCHAR(32) NOT NULL DEFAULT 'not_configured',
+      customer_email_status VARCHAR(32) NOT NULL DEFAULT 'not_configured',
+      email_error TEXT NULL,
       ip_address VARCHAR(64) NULL,
       user_agent VARCHAR(500) NULL,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -71,6 +74,41 @@ async function createSchema() {
   if (!sourceColumns.length) {
     await pool.execute("ALTER TABLE enquiries ADD COLUMN source_page VARCHAR(190) NOT NULL DEFAULT 'Website' AFTER service");
   }
+  const [adminEmailColumns] = await pool.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM enquiries LIKE 'admin_email_status'");
+  if (!adminEmailColumns.length) {
+    await pool.execute("ALTER TABLE enquiries ADD COLUMN admin_email_status VARCHAR(32) NOT NULL DEFAULT 'not_configured' AFTER status");
+  }
+  const [customerEmailColumns] = await pool.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM enquiries LIKE 'customer_email_status'");
+  if (!customerEmailColumns.length) {
+    await pool.execute("ALTER TABLE enquiries ADD COLUMN customer_email_status VARCHAR(32) NOT NULL DEFAULT 'not_configured' AFTER admin_email_status");
+  }
+  const [emailErrorColumns] = await pool.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM enquiries LIKE 'email_error'");
+  if (!emailErrorColumns.length) {
+    await pool.execute("ALTER TABLE enquiries ADD COLUMN email_error TEXT NULL AFTER customer_email_status");
+  }
+
+  await pool.execute(`
+    CREATE TABLE IF NOT EXISTS email_settings (
+      id TINYINT UNSIGNED NOT NULL DEFAULT 1,
+      enabled TINYINT(1) NOT NULL DEFAULT 0,
+      smtp_host VARCHAR(190) NOT NULL DEFAULT 'smtp.hostinger.com',
+      smtp_port INT UNSIGNED NOT NULL DEFAULT 465,
+      smtp_secure TINYINT(1) NOT NULL DEFAULT 1,
+      smtp_user VARCHAR(190) NOT NULL DEFAULT 'ML@lemaraccountants.co.uk',
+      smtp_password_encrypted TEXT NULL,
+      notification_email VARCHAR(190) NOT NULL DEFAULT 'ML@lemaraccountants.co.uk',
+      reply_to_email VARCHAR(190) NOT NULL DEFAULT 'ML@lemaraccountants.co.uk',
+      sender_name VARCHAR(120) NOT NULL DEFAULT 'Lemar Accountants',
+      customer_subject VARCHAR(190) NOT NULL DEFAULT 'We have received your Lemar enquiry',
+      customer_message TEXT NOT NULL,
+      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+  await pool.execute(
+    "INSERT IGNORE INTO email_settings (id, customer_message) VALUES (1, ?)",
+    ["Thank you for contacting Lemar Accountants. We have received your enquiry and a member of our team will get back to you shortly."],
+  );
 
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.ADMIN_INITIAL_PASSWORD;

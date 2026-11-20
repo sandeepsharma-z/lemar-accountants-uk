@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import type { ResultSetHeader } from "mysql2";
 import { ensureSchema, getPool } from "../../lib/db";
+import { sendEnquiryEmails } from "../../lib/mailer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,11 +26,22 @@ export async function POST(request: Request) {
     }
     await ensureSchema();
     const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-    await getPool().execute(
+    const [result] = await getPool().execute<ResultSetHeader>(
       "INSERT INTO enquiries (enquiry_type, full_name, phone, email, service, source_page, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [enquiryType, fullName, phone, email, service, sourcePage, message || null, forwarded || null, request.headers.get("user-agent")?.slice(0, 500) || null],
     );
-    return NextResponse.json({ ok: true }, { status: 201 });
+    let delivery: Awaited<ReturnType<typeof sendEnquiryEmails>>;
+    try {
+      delivery = await sendEnquiryEmails({ fullName, phone, email, service, sourcePage, message });
+    } catch (mailError) {
+      console.error("Enquiry saved but email delivery failed", mailError);
+      delivery = { adminStatus: "failed", customerStatus: "failed", error: mailError instanceof Error ? mailError.message.slice(0, 2000) : "Email delivery failed" };
+    }
+    await getPool().execute(
+      "UPDATE enquiries SET admin_email_status=?, customer_email_status=?, email_error=? WHERE id=?",
+      [delivery.adminStatus, delivery.customerStatus, delivery.error, result.insertId],
+    );
+    return NextResponse.json({ ok: true, emailDelivery: { business: delivery.adminStatus, customer: delivery.customerStatus } }, { status: 201 });
   } catch (error) {
     console.error("Enquiry submission failed", error);
     return NextResponse.json({ error: "Unable to submit your enquiry right now. Please call or email us." }, { status: 500 });

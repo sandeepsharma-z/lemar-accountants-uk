@@ -16,11 +16,13 @@
     "lucide-react": "latest",
     "mysql2": "^3.24.6",
     "next": "latest",
+    "nodemailer": "^10.6.1",
     "react": "latest",
     "react-dom": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "eslint": "latest",
