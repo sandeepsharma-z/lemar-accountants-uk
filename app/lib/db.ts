@@ -97,6 +97,7 @@ async function createSchema() {
       smtp_user VARCHAR(190) NOT NULL DEFAULT 'ML@lemaraccountants.co.uk',
       smtp_password_encrypted TEXT NULL,
       notification_email VARCHAR(190) NOT NULL DEFAULT 'ML@lemaraccountants.co.uk',
+      additional_notification_email VARCHAR(190) NOT NULL DEFAULT 'admin@lemaraccountants.co.uk',
       reply_to_email VARCHAR(190) NOT NULL DEFAULT 'ML@lemaraccountants.co.uk',
       sender_name VARCHAR(120) NOT NULL DEFAULT 'Lemar Accountants',
       customer_subject VARCHAR(190) NOT NULL DEFAULT 'We have received your Lemar enquiry',
@@ -109,6 +110,10 @@ async function createSchema() {
     "INSERT IGNORE INTO email_settings (id, customer_message) VALUES (1, ?)",
     ["Thank you for contacting Lemar Accountants. We have received your enquiry and a member of our team will get back to you shortly."],
   );
+  const [additionalNotificationColumns] = await pool.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM email_settings LIKE 'additional_notification_email'");
+  if (!additionalNotificationColumns.length) {
+    await pool.execute("ALTER TABLE email_settings ADD COLUMN additional_notification_email VARCHAR(190) NOT NULL DEFAULT 'admin@lemaraccountants.co.uk' AFTER notification_email");
+  }
 
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const password = process.env.ADMIN_INITIAL_PASSWORD;

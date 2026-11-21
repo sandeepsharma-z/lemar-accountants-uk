@@ -11,6 +11,7 @@ type Settings = {
   smtpUser: string;
   hasPassword: boolean;
   notificationEmail: string;
+  additionalNotificationEmail: string;
   replyToEmail: string;
   senderName: string;
   customerSubject: string;
@@ -25,6 +26,7 @@ const initialSettings: Settings = {
   smtpUser: "ML@lemaraccountants.co.uk",
   hasPassword: false,
   notificationEmail: "ML@lemaraccountants.co.uk",
+  additionalNotificationEmail: "admin@lemaraccountants.co.uk",
   replyToEmail: "ML@lemaraccountants.co.uk",
   senderName: "Lemar Accountants",
   customerSubject: "We have received your Lemar enquiry",
@@ -73,7 +75,7 @@ export default function EmailSettingsPanel() {
     const response = await fetch("/api/admin/email-settings", { method: "POST", credentials: "same-origin" });
     const data = await response.json();
     if (!response.ok) setError(data.error || "Unable to send test email.");
-    else setSuccess(`Test email sent to ${settings.notificationEmail}.`);
+    else setSuccess(`Test email sent to ${[settings.notificationEmail, settings.additionalNotificationEmail].filter(Boolean).join(" and ")}.`);
     setTesting(false);
   }
 
@@ -97,6 +99,7 @@ export default function EmailSettingsPanel() {
       <div className="admin-settings-section-head secondary"><div><p className="admin-eyebrow">DELIVERY DETAILS</p><h3>Recipients and sender identity</h3></div></div>
       <div className="admin-settings-grid">
         <label>Business notification email<input type="email" value={settings.notificationEmail} onChange={event => setSettings(current => ({ ...current, notificationEmail: event.target.value }))} required /></label>
+        <label>Additional notification email <small>Every enquiry will also be sent here.</small><input type="email" value={settings.additionalNotificationEmail} onChange={event => setSettings(current => ({ ...current, additionalNotificationEmail: event.target.value }))} placeholder="admin@lemaraccountants.co.uk" /></label>
         <label>Customer reply-to email<input type="email" value={settings.replyToEmail} onChange={event => setSettings(current => ({ ...current, replyToEmail: event.target.value }))} required /></label>
         <label className="wide">Sender name<input value={settings.senderName} onChange={event => setSettings(current => ({ ...current, senderName: event.target.value }))} required /></label>
       </div>

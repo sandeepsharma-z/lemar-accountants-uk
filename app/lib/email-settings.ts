@@ -10,6 +10,7 @@ export type EmailSettings = {
   smtpUser: string;
   smtpPassword: string;
   notificationEmail: string;
+  additionalNotificationEmail: string;
   replyToEmail: string;
   senderName: string;
   customerSubject: string;
@@ -43,7 +44,8 @@ export async function getEmailSettings(): Promise<EmailSettings & { hasPassword:
   const [rows] = await getPool().query<RowDataPacket[]>(`
     SELECT enabled, smtp_host AS smtpHost, smtp_port AS smtpPort, smtp_secure AS smtpSecure,
       smtp_user AS smtpUser, smtp_password_encrypted AS smtpPasswordEncrypted,
-      notification_email AS notificationEmail, reply_to_email AS replyToEmail,
+      notification_email AS notificationEmail, additional_notification_email AS additionalNotificationEmail,
+      reply_to_email AS replyToEmail,
       sender_name AS senderName, customer_subject AS customerSubject,
       customer_message AS customerMessage
     FROM email_settings WHERE id = 1 LIMIT 1
@@ -59,6 +61,7 @@ export async function getEmailSettings(): Promise<EmailSettings & { hasPassword:
     smtpPassword: decryptEmailPassword(row.smtpPasswordEncrypted ? String(row.smtpPasswordEncrypted) : null),
     hasPassword: Boolean(row.smtpPasswordEncrypted),
     notificationEmail: String(row.notificationEmail),
+    additionalNotificationEmail: String(row.additionalNotificationEmail || ""),
     replyToEmail: String(row.replyToEmail),
     senderName: String(row.senderName),
     customerSubject: String(row.customerSubject),

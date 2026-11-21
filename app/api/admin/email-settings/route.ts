@@ -31,11 +31,12 @@ export async function PATCH(request: Request) {
     const smtpUser = clean(body.smtpUser, 190).toLowerCase();
     const smtpPassword = clean(body.smtpPassword, 500);
     const notificationEmail = clean(body.notificationEmail, 190).toLowerCase();
+    const additionalNotificationEmail = clean(body.additionalNotificationEmail, 190).toLowerCase();
     const replyToEmail = clean(body.replyToEmail, 190).toLowerCase();
     const senderName = clean(body.senderName, 120);
     const customerSubject = clean(body.customerSubject, 190);
     const customerMessage = clean(body.customerMessage, 5000);
-    if (!smtpHost || !Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535 || !isEmail(smtpUser) || !isEmail(notificationEmail) || !isEmail(replyToEmail) || !senderName || !customerSubject || !customerMessage) {
+    if (!smtpHost || !Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535 || !isEmail(smtpUser) || !isEmail(notificationEmail) || (additionalNotificationEmail && !isEmail(additionalNotificationEmail)) || !isEmail(replyToEmail) || !senderName || !customerSubject || !customerMessage) {
       return NextResponse.json({ error: "Please complete all email settings with valid values." }, { status: 400 });
     }
     if (enabled && !smtpPassword && !current.hasPassword) {
@@ -44,13 +45,13 @@ export async function PATCH(request: Request) {
     await ensureSchema();
     if (smtpPassword) {
       await getPool().execute(
-        "UPDATE email_settings SET enabled=?, smtp_host=?, smtp_port=?, smtp_secure=?, smtp_user=?, smtp_password_encrypted=?, notification_email=?, reply_to_email=?, sender_name=?, customer_subject=?, customer_message=? WHERE id=1",
-        [enabled, smtpHost, smtpPort, smtpSecure, smtpUser, encryptEmailPassword(smtpPassword), notificationEmail, replyToEmail, senderName, customerSubject, customerMessage],
+        "UPDATE email_settings SET enabled=?, smtp_host=?, smtp_port=?, smtp_secure=?, smtp_user=?, smtp_password_encrypted=?, notification_email=?, additional_notification_email=?, reply_to_email=?, sender_name=?, customer_subject=?, customer_message=? WHERE id=1",
+        [enabled, smtpHost, smtpPort, smtpSecure, smtpUser, encryptEmailPassword(smtpPassword), notificationEmail, additionalNotificationEmail, replyToEmail, senderName, customerSubject, customerMessage],
       );
     } else {
       await getPool().execute(
-        "UPDATE email_settings SET enabled=?, smtp_host=?, smtp_port=?, smtp_secure=?, smtp_user=?, notification_email=?, reply_to_email=?, sender_name=?, customer_subject=?, customer_message=? WHERE id=1",
-        [enabled, smtpHost, smtpPort, smtpSecure, smtpUser, notificationEmail, replyToEmail, senderName, customerSubject, customerMessage],
+        "UPDATE email_settings SET enabled=?, smtp_host=?, smtp_port=?, smtp_secure=?, smtp_user=?, notification_email=?, additional_notification_email=?, reply_to_email=?, sender_name=?, customer_subject=?, customer_message=? WHERE id=1",
+        [enabled, smtpHost, smtpPort, smtpSecure, smtpUser, notificationEmail, additionalNotificationEmail, replyToEmail, senderName, customerSubject, customerMessage],
       );
     }
     return NextResponse.json({ ok: true, hasPassword: Boolean(smtpPassword || current.hasPassword) });
