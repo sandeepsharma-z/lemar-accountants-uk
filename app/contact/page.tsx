@@ -24,6 +24,7 @@ import ServiceMenu from "../components/service-menu";
 import SiteFooter from "../components/site-footer";
 import SiteSearch from "../components/site-search";
 import { enquiryServiceOptions } from "../lib/service-options";
+import { submitEnquiry } from "../lib/submit-enquiry";
 import "../about/about.css";
 import "./contact.css";
 
@@ -77,25 +78,20 @@ export default function ContactPage() {
     setFormError("");
 
     try {
-      const response = await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          enquiryType: "contact",
-          fullName: String(data.get("name") || ""),
-          phone: String(data.get("phone") || ""),
-          email: String(data.get("email") || ""),
-          service: String(data.get("service") || ""),
-          message: String(data.get("message") || ""),
-          sourcePage: "Contact page enquiry form",
-          website: String(data.get("website") || ""),
-        }),
+      await submitEnquiry({
+        enquiryType: "contact",
+        fullName: String(data.get("name") || ""),
+        phone: String(data.get("phone") || ""),
+        email: String(data.get("email") || ""),
+        service: String(data.get("service") || ""),
+        message: String(data.get("message") || ""),
+        sourcePage: "Contact page enquiry form",
+        website: String(data.get("website") || ""),
       });
-      if (!response.ok) throw new Error("Unable to send your enquiry.");
       form.reset();
       setSent(true);
-    } catch {
-      setFormError("We could not send your enquiry. Please try again or call us directly.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "We could not send your enquiry. Please try again or call us directly.");
     } finally {
       setSubmitting(false);
     }

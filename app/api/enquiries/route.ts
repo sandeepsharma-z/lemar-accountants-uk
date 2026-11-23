@@ -10,6 +10,10 @@ function clean(value: unknown, max = 500) {
   return String(value ?? "").trim().slice(0, max);
 }
 
+function isDuplicateSubmission(error: unknown) {
+  return Boolean(error && typeof error === "object" && "code" in error && error.code === "ER_DUP_ENTRY");
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -18,6 +22,7 @@ export async function POST(request: Request) {
     const fullName = clean(body.fullName, 150);
     const phone = clean(body.phone, 50);
     const email = clean(body.email, 190).toLowerCase();
+    const submissionKey = clean(body.submissionKey, 100) || null;
     const service = clean(body.service || "General enquiry", 190);
     const sourcePage = clean(body.sourcePage || "Website", 190);
     const message = clean(body.message, 5000);
@@ -26,10 +31,18 @@ export async function POST(request: Request) {
     }
     await ensureSchema();
     const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-    const [result] = await getPool().execute<ResultSetHeader>(
-      "INSERT INTO enquiries (enquiry_type, full_name, phone, email, service, source_page, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [enquiryType, fullName, phone, email, service, sourcePage, message || null, forwarded || null, request.headers.get("user-agent")?.slice(0, 500) || null],
-    );
+    let result: ResultSetHeader;
+    try {
+      [result] = await getPool().execute<ResultSetHeader>(
+        "INSERT INTO enquiries (enquiry_type, full_name, phone, email, submission_key, service, source_page, message, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        [enquiryType, fullName, phone, email, submissionKey, service, sourcePage, message || null, forwarded || null, request.headers.get("user-agent")?.slice(0, 500) || null],
+      );
+    } catch (error) {
+      if (submissionKey && isDuplicateSubmission(error)) {
+        return NextResponse.json({ ok: true, duplicate: true }, { status: 200 });
+      }
+      throw error;
+    }
     let delivery: Awaited<ReturnType<typeof sendEnquiryEmails>>;
     try {
       delivery = await sendEnquiryEmails({ fullName, phone, email, service, sourcePage, message });

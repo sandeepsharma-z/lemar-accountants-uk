@@ -53,6 +53,7 @@ async function createSchema() {
       full_name VARCHAR(150) NOT NULL,
       phone VARCHAR(50) NOT NULL,
       email VARCHAR(190) NOT NULL,
+      submission_key VARCHAR(100) NULL,
       service VARCHAR(190) NOT NULL DEFAULT 'General enquiry',
       source_page VARCHAR(190) NOT NULL DEFAULT 'Website',
       message TEXT NULL,
@@ -66,13 +67,18 @@ async function createSchema() {
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       PRIMARY KEY (id),
       KEY idx_enquiries_status (status),
-      KEY idx_enquiries_created (created_at)
+      KEY idx_enquiries_created (created_at),
+      UNIQUE KEY uq_enquiries_submission_key (submission_key)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
 
   const [sourceColumns] = await pool.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM enquiries LIKE 'source_page'");
   if (!sourceColumns.length) {
     await pool.execute("ALTER TABLE enquiries ADD COLUMN source_page VARCHAR(190) NOT NULL DEFAULT 'Website' AFTER service");
+  }
+  const [submissionKeyColumns] = await pool.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM enquiries LIKE 'submission_key'");
+  if (!submissionKeyColumns.length) {
+    await pool.execute("ALTER TABLE enquiries ADD COLUMN submission_key VARCHAR(100) NULL AFTER email, ADD UNIQUE KEY uq_enquiries_submission_key (submission_key)");
   }
   const [adminEmailColumns] = await pool.query<mysql.RowDataPacket[]>("SHOW COLUMNS FROM enquiries LIKE 'admin_email_status'");
   if (!adminEmailColumns.length) {

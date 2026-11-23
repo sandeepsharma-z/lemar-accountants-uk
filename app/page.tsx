@@ -13,6 +13,7 @@ import SiteFooter from "./components/site-footer";
 import ServiceMenu from "./components/service-menu";
 import SiteSearch from "./components/site-search";
 import { enquiryServiceOptions } from "./lib/service-options";
+import { submitEnquiry } from "./lib/submit-enquiry";
 
 const heroSlides = [
   {
@@ -161,24 +162,19 @@ export default function Home() {
     setFormError("");
 
     try {
-      const response = await fetch("/api/enquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          enquiryType: "callback",
-          fullName: String(data.get("name") || ""),
-          phone: String(data.get("phone") || ""),
-          email: String(data.get("email") || ""),
-          service: String(data.get("service") || "General enquiry"),
-          sourcePage: "Homepage callback form",
-          website: String(data.get("website") || ""),
-        }),
+      await submitEnquiry({
+        enquiryType: "callback",
+        fullName: String(data.get("name") || ""),
+        phone: String(data.get("phone") || ""),
+        email: String(data.get("email") || ""),
+        service: String(data.get("service") || "General enquiry"),
+        sourcePage: "Homepage callback form",
+        website: String(data.get("website") || ""),
       });
-      if (!response.ok) throw new Error("Unable to submit your callback request.");
       form.reset();
       setSent(true);
-    } catch {
-      setFormError("We could not submit your request. Please try again or call us directly.");
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "We could not submit your request. Please try again or call us directly.");
     } finally {
       setSubmitting(false);
     }
